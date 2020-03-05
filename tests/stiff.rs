@@ -32,7 +32,7 @@ fn main() {
     let itol = 1;
     let itask = 1;
     let iopt = 0;
-    let istate = 1;
+    let mut istate = 1;
     let mf = 22;
     const LRW: i32 = (22 + 9*NEQ + NEQ*NEQ);
     const LIW: i32 = 20 + NEQ;
@@ -51,7 +51,7 @@ fn main() {
             &rtol,
             &atol,
             &itask,
-            &istate,
+            &mut istate,
             &iopt,
             rwork.as_mut_ptr(),
             &LRW,

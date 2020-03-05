@@ -13,7 +13,7 @@ extern {
                rtol: &c_double,
                atol: &c_double,
                itask: &c_int,
-               istate: &c_int,
+               istate: &mut c_int,
                iopt: &c_int,
                rwork: *mut c_double,// 22 + 9*N + N*N
                lrw: &c_int,
@@ -61,7 +61,7 @@ pub fn solve_ode(
     let itol = 1;
     let itask = 1;
     let iopt = 0;
-    let istate = 1;
+    let mut istate = 1;
     let mf = 22;
 
     let lrw = 22 + 9*n + n*n;
@@ -82,7 +82,7 @@ pub fn solve_ode(
                 &rtol,
                 &atol,
                 &itask,
-                &istate,
+                &mut istate,
                 &iopt,
                 rwork.as_mut_ptr(),
                 &(lrw as i32),
@@ -91,6 +91,7 @@ pub fn solve_ode(
                 fake_jacobian,
                 &mf
                 ); }
+
         result.push(y.clone());
     }
     result
