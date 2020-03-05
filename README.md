@@ -2,6 +2,8 @@
 
 Look inside tests for use cases.
 
+Works on stiff ODEs.
+
 # ODEPACK
 
 I obtained the ODEPACK code that is present in this repository from [here](http://www.netlib.org/odepack/).

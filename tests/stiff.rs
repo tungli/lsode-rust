@@ -5,8 +5,8 @@ use std::slice;
 // From Numerical Recipes - The Art of Scientific Computing by W.H. Press et al. in chapter about
 // stiff ODEs.
 extern fn rhs(
-    n: &c_int,
-    _t: &mut c_double,
+    n: *const c_int,
+    _t: *const c_double,
     y_ptr: *mut c_double,
     dy_ptr: *mut c_double
     ) {
