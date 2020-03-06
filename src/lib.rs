@@ -52,6 +52,7 @@ pub extern fn fake_jacobian(
 ///
 /// # Example
 ///
+/// ```
 /// let y0 = [1.0];
 /// let ts = vec![0.0, 1.0];
 /// let f = |y: &[f64], t: &f64| {
@@ -62,6 +63,7 @@ pub extern fn fake_jacobian(
 /// let sol = lsode::solve_ode(f, &y0, ts, 1e-6, 1e-6);
 /// 
 /// assert!((sol[1][0] - y0[0]*0.5_f64.exp()).abs() < 1e-3, "error too large");
+/// ```
 pub fn solve_ode<F>(
     rhs: F, 
     y0: &[f64],

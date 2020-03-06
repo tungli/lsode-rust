@@ -1,3 +1,5 @@
+Docs are [here](https://docs.rs/lsode).
+
 # Solve systems of differential equations
 
 This crate uses ODEPACK Fortran library to solve systems of ordinary differential equations.
@@ -41,5 +43,7 @@ fn main() {
 
 # ODEPACK
 
-I obtained the ODEPACK code that is present in this repository from [here](http://www.netlib.org/odepack/).
+I obtained the [ODEPACK][1] code that is present in this repository from [here](http://www.netlib.org/odepack/).
 I do not know what the licensing of the original ODEPACK code is, I assume it is released to the public domain.
+
+[1]: https://computing.llnl.gov/casc/odepack/odepack_home.html
