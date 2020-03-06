@@ -1,9 +1,13 @@
 use libc::{c_double, c_int};
 use std::slice;
-use libffi::high::ClosureMut4;
+use libffi::high::Closure4;
+
 
 #[link(name = "gfortran")]
 extern {
+    /// Call `DLSODE` subroutine from ODEPACK
+    ///
+    /// For info on passed arguments look inside ODEPACK.
     pub fn dlsode_(f: extern fn(*const c_int, *const c_double, *mut c_double, *mut c_double),
                neq: &c_int,
                y: *mut c_double,
@@ -15,43 +19,73 @@ extern {
                itask: &c_int,
                istate: &mut c_int,
                iopt: &c_int,
-               rwork: *mut c_double,// 22 + 9*N + N*N
+               rwork: *mut c_double,
                lrw: &c_int,
-               iwork: *mut c_int,//20 + N
+               iwork: *mut c_int,
                liw: &c_int,
-               jac: extern fn(&mut c_int,&mut c_double,&mut c_double,&mut c_int,&mut c_int,&mut c_double,&mut c_int),
+               jac: extern fn(&c_int, &c_double, *mut c_double, &c_int, &c_int, *const c_double, &c_int),
                mf: &c_int
                );
 }
 
+/// A dummy function to pass to `dlsode_` in case the user does not want to specify a Jacobian.
 pub extern fn fake_jacobian(
-    _x1: &mut c_int,
-    _x2: &mut c_double,
-    _x3: &mut c_double,
-    _x4: &mut c_int,
-    _x5: &mut c_int,
-    _x6: &mut c_double,
-    _x7: &mut c_int,
-    ) {
-}
+    _neq: &c_int,
+    _t:   &c_double,
+    _y:   *mut c_double,
+    _ml:  &c_int,
+    _mu:  &c_int,
+    _pd:  *const c_double,
+    _nr:  &c_int
+    ) { }
 
-pub fn solve_ode(
-    rhs: fn(&[f64], &f64) -> Vec<f64>, 
+
+/// Solves system of ODEs for times in `t_dense`.
+/// First time in `t_dense` has to be the initial time.
+///
+/// Each equation in the system of ODEs has the form:
+/// 
+/// > *dy/dt = f(y, t)*
+/// 
+/// The function expects the function *f* as the first argument `rhs`.
+/// Initial state is given in `y0`.
+///
+/// # Example
+///
+/// let y0 = [1.0];
+/// let ts = vec![0.0, 1.0];
+/// let f = |y: &[f64], t: &f64| {
+///     let mut dy = vec![0.0];
+///     dy[0] = *t * y[0]; 
+///     dy
+///     };
+/// let sol = lsode::solve_ode(f, &y0, ts, 1e-6, 1e-6);
+/// 
+/// assert!((sol[1][0] - y0[0]*0.5_f64.exp()).abs() < 1e-3, "error too large");
+pub fn solve_ode<F>(
+    rhs: F, 
     y0: &[f64],
     t_dense: Vec<f64>,
     atol: f64,
-    rtol :f64,
-    ) -> Vec<Vec<f64>> {
+    rtol: f64,
+    ) -> Vec<Vec<f64>> 
+where F: Fn(&[f64], &f64) -> Vec<f64>
+{
 
-    let mut f = | n: *const c_int, t: *const c_double, y_ptr: *mut c_double, dy_ptr: *mut c_double | {
-        let dy = unsafe { slice::from_raw_parts_mut(dy_ptr, n as usize) }; 
-        let y = unsafe { slice::from_raw_parts(y_ptr, n as usize) }; 
-        let dy_new = unsafe {rhs(y, &*t) };
+    let f = | n: *const c_int, t_ptr: *const c_double, y_ptr: *mut c_double, dy_ptr: *mut c_double | {
+        let (dy, y, t) = unsafe {
+            (
+                slice::from_raw_parts_mut(dy_ptr, n as usize),
+                slice::from_raw_parts(y_ptr, n as usize),
+                *t_ptr
+            )
+        };
+        let dy_new = rhs(y, &t);
         for (i, deriv) in dy_new.iter().enumerate() {
             dy[i] = *deriv
         }
     };
-    let closure = ClosureMut4::new(&mut f);
+    let closure = Closure4::new(&f);
     let call = closure.code_ptr();
 
     let mut y: Vec<f64> = y0.to_vec();

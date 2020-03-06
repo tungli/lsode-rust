@@ -28,8 +28,10 @@ fn stiff() {
     let sol = lsode::solve_ode(rhs_stiff, &y0, ts.clone(), atol, rtol);
 
     for (analytical, calculated) in ts.iter().map(|x| solution_stiff(*x)).zip(sol) {
-        assert!((analytical[0] - calculated[0]).abs() < 1e-3, "|{} - {}| not matching the tolerance", analytical[0], calculated[0]);
-        assert!((analytical[1] - calculated[1]).abs() < 1e-3, "|{} - {}| not matching the tolerance", analytical[1], calculated[1]);
+        assert!((analytical[0] - calculated[0]).abs() < 1e-3,
+        "|{} - {}| calculated and expected results are suspiciously different", analytical[0], calculated[0]);
+        assert!((analytical[1] - calculated[1]).abs() < 1e-3,
+        "|{} - {}| calculated and expected results are suspiciously different", analytical[1], calculated[1]);
     }
 }
 
@@ -58,6 +60,23 @@ fn decay() {
     println!("{:?}", sol);
 
     for (analytical, calculated) in ts.iter().map(|x| solution_decay(*x)).zip(sol) {
-        assert!((analytical[0] - calculated[0]).abs() < 1e-3, "|{} - {}| not matching the tolerance", analytical[0], calculated[0]);
+        assert!((analytical[0] - calculated[0]).abs() < 1e-3,
+        "|{} - {}| calculated and expected results are suspiciously different", analytical[0], calculated[0]);
     }
+}
+
+
+#[test]
+fn closure_rhs() {
+    let y0 = [1.0];
+    let ts = vec![0.0, 1.0];
+    let f = |y: &[f64], t: &f64| {
+        let mut dy = vec![0.0];
+        dy[0] = *t * y[0]; 
+        dy
+        };
+    let sol = lsode::solve_ode(f, &y0, ts, 1e-6, 1e-6);
+    
+    println!("{:?}", sol);
+    assert!((sol[1][0] - y0[0]*0.5_f64.exp()).abs() < 1e-3, "error too large");
 }

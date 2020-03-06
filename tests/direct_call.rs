@@ -24,7 +24,7 @@ fn solution(t: f64) -> [f64; 2] {
 }
 
 #[test]
-fn main() {
+fn direct_call_to_dlsode() {
     let mut y = [1.0, 0.0];
     const NEQ: i32 = 2;
     let mut t = 0.0;
@@ -62,8 +62,10 @@ fn main() {
            ) };
 
     let sol = solution(tout);
-    assert!((sol[0] - y[0]).abs() < 1e-3, "|{} - {}| not matching the tolerance", sol[0], y[0]);
-    assert!((sol[1] - y[1]).abs() < 1e-3, "|{} - {}| not matching the tolerance", sol[1], y[1]);
+    assert!((sol[0] - y[0]).abs() < 1e-3,
+    "|{} - {}| calculated and expected results are suspiciously different", sol[0], y[0]);
+    assert!((sol[1] - y[1]).abs() < 1e-3,
+    "|{} - {}| calculated and expected results are suspiciously different", sol[1], y[1]);
 }
 
 
