@@ -3,6 +3,7 @@ extern crate cc;
 fn main() {
     cc::Build::new()
         .flag("-w")
+        .flag("-fallow-argument-mismatch")
         .file("src/odepack.f")
         .compile("libodepack.a");
 
